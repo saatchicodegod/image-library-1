@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Library</title>
+    <style>
+        body {
+            font-family: Gotham, "Helvetica Neue", Helvetica, Arial, "sans-serif";
+            margin: 0;
+            padding: 0 20px;
+            box-sizing: border-box;
+        }
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: auto;
+            padding: 30px 0;
+        }
+        .logo {
+            width: 100%;
+            max-width: 2500px; 
+            height: auto;
+        }
+        .menu {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 50px;
+        }
+        .menu a {
+            margin: 0 10px;
+            text-decoration: none;
+            color: #000;
+            font-size: 20px;
+            font-weight: 200;
+            transition: color 0.2s;
+        }
+        .menu a.active {
+            color: #000000;
+            font-weight: 500;
+        }
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+        .gallery img {
+            width: calc(20% - 50px);
+            margin-bottom: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            object-fit: cover;
+            height: 400px;
+        }
+        .gallery img:hover {
+            transform: scale(1.05);
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .overlay img {
+            max-width: 90%;
+            max-height: 80%;
+        }
+        .overlay .buttons {
+            position: absolute;
+            bottom: 40px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+        .overlay .buttons button {
+            margin: 0 10px;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .overlay .buttons .download-button {
+            background: #ffffff;
+            color: #000000;
+            border-radius: 5px;
+        }
+        .overlay .buttons .close-button {
+            background-color: transparent;
+            color: #ffffff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container">
+        <img src="images/m&c_logo.svg" alt="m&c_logo" class="logo">
+    </div>
+    <div class="menu">
+        <a href="#" onclick="loadImages('day1', this)">Day 1</a>
+        <a href="#" onclick="loadImages('day2', this)">Day 2</a>
+        <a href="#" onclick="loadImages('day3', this)">Day 3</a>
+        <a href="#" onclick="loadImages('day4', this)">Day 4</a>
+    </div>
+    <div class="gallery" id="gallery"></div>
+
+    <div class="overlay" id="overlay">
+        <img id="overlayImage" alt="Full View">
+        <div class="buttons">
+            <button class="download-button" onclick="downloadImage()">Download</button>
+            <button class="close-button" onclick="closeOverlay()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function loadImages(day, element) {
+            fetch(`/images/${day}`)
+                .then(response => response.json())
+                .then(images => {
+                    const gallery = document.getElementById('gallery');
+                    gallery.innerHTML = ''; // Clear current images
+
+                    images.forEach(image => {
+                        const img = document.createElement('img');
+                        img.src = `/${day}/${image}`;
+                        img.alt = image;
+                        img.onclick = () => showOverlay(img.src);
+                        gallery.appendChild(img);
+                    });
+                
+                    document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+                    element.classList.add('active');
+                })
+                .catch(error => console.error('Error fetching images:', error));
+        }
+
+        function showOverlay(src) {
+            const overlay = document.getElementById('overlay');
+            const overlayImage = document.getElementById('overlayImage');
+            overlayImage.src = src;
+            overlay.style.display = 'flex';
+        }
+
+        function closeOverlay() {
+            const overlay = document.getElementById('overlay');
+            overlay.style.display = 'none';
+        }
+
+        function downloadImage() {
+            const overlayImage = document.getElementById('overlayImage');
+            const a = document.createElement('a');
+            a.href = overlayImage.src;
+            a.download = overlayImage.src.split('/').pop();
+            a.click();
+        }
+
+        // Initial load
+        loadImages('day1', document.querySelector('.menu a:first-child'));
+    </script>
+</body>
+</html>
