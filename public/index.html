@@ -128,7 +128,7 @@
 
                     images.forEach(image => {
                         const img = document.createElement('img');
-                        img.src = `/${day}/${image}`;
+                        img.src = `/images/${day}/${image}`;
                         img.alt = image;
                         img.onclick = () => showOverlay(img.src);
                         gallery.appendChild(img);
