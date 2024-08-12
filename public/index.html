@@ -96,6 +96,32 @@
             color: #ffffff;
             border-radius: 5px;
         }
+		.arrow-button {
+   			position: absolute;
+    		top: 50%;
+    		transform: translateY(-50%);
+    		background-color: transparent;
+			border: none;
+			color: white;
+			font-size: 40px;
+			cursor: pointer;
+			z-index: 1001;
+			padding: 0 70px;
+			user-select: none;
+		}
+
+		.left-arrow {
+			left: 0;
+		}
+
+		.right-arrow {
+			right: 0;
+		}
+
+		.arrow-button:hover {
+			color: #ccc;
+		}
+
     </style>
 </head>
 <body>
@@ -110,58 +136,86 @@
     </div>
     <div class="gallery" id="gallery"></div>
 
-    <div class="overlay" id="overlay">
-        <img id="overlayImage" alt="Full View">
-        <div class="buttons">
-            <button class="download-button" onclick="downloadImage()">Download</button>
-            <button class="close-button" onclick="closeOverlay()">Close</button>
-        </div>
+   <div class="overlay" id="overlay">
+    <button class="arrow-button left-arrow" onclick="prevImage()">&#10094;</button> <!-- Left Arrow -->
+    <img id="overlayImage" alt="Full View">
+    <button class="arrow-button right-arrow" onclick="nextImage()">&#10095;</button> <!-- Right Arrow -->
+    <div class="buttons">
+        <button class="download-button" onclick="downloadImage()">Download</button>
+        <button class="close-button" onclick="closeOverlay()">Close</button>
     </div>
+	</div>
 
     <script>
-        function loadImages(day, element) {
-            fetch(`/images/${day}`)
-                .then(response => response.json())
-                .then(images => {
-                    const gallery = document.getElementById('gallery');
-                    gallery.innerHTML = ''; // Clear current images
+        let currentImageIndex = 0;
+		let currentImages = [];
 
-                    images.forEach(image => {
-                        const img = document.createElement('img');
-                        img.src = `/images/${day}/${image}`;
-                        img.alt = image;
-                        img.onclick = () => showOverlay(img.src);
-                        gallery.appendChild(img);
-                    });
-                
-                    document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
-                    element.classList.add('active');
-                })
-                .catch(error => console.error('Error fetching images:', error));
-        }
+		function loadImages(day, element) {
+			fetch(`/images/${day}`)
+				.then(response => response.json())
+				.then(images => {
+					const gallery = document.getElementById('gallery');
+					gallery.innerHTML = ''; // Clear current images
+					currentImages = images; // Store images in the global variable
 
-        function showOverlay(src) {
-            const overlay = document.getElementById('overlay');
-            const overlayImage = document.getElementById('overlayImage');
-            overlayImage.src = src;
-            overlay.style.display = 'flex';
-        }
+					images.forEach((image, index) => {
+						const img = document.createElement('img');
+						img.src = `/images/${day}/${image}`;
+						img.alt = image;
+						img.onclick = () => showOverlay(index);
+						gallery.appendChild(img);
+					});
 
-        function closeOverlay() {
-            const overlay = document.getElementById('overlay');
-            overlay.style.display = 'none';
-        }
+					document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+					element.classList.add('active');
+				})
+				.catch(error => console.error('Error fetching images:', error));
+		}
 
-        function downloadImage() {
-            const overlayImage = document.getElementById('overlayImage');
-            const a = document.createElement('a');
-            a.href = overlayImage.src;
-            a.download = overlayImage.src.split('/').pop();
-            a.click();
-        }
+		function showOverlay(index) {
+			const overlay = document.getElementById('overlay');
+			const overlayImage = document.getElementById('overlayImage');
+			currentImageIndex = index;
 
-        // Initial load
-        loadImages('day1', document.querySelector('.menu a:first-child'));
+			// Construct the correct image path
+			const selectedImage = currentImages[currentImageIndex];
+			const dayFolder = document.querySelector('.menu a.active').textContent.toLowerCase().replace(' ', '');
+			overlayImage.src = `/images/${dayFolder}/${selectedImage}`;
+
+			overlay.style.display = 'flex';
+		}
+
+
+		function closeOverlay() {
+			const overlay = document.getElementById('overlay');
+			overlay.style.display = 'none';
+		}
+
+		function downloadImage() {
+			const overlayImage = document.getElementById('overlayImage');
+			const a = document.createElement('a');
+			a.href = overlayImage.src;
+			a.download = overlayImage.src.split('/').pop();
+			a.click();
+		}
+
+		function prevImage() {
+			if (currentImageIndex > 0) {
+				currentImageIndex--;
+				showOverlay(currentImageIndex);
+			}
+		}
+
+		function nextImage() {
+			if (currentImageIndex < currentImages.length - 1) {
+				currentImageIndex++;
+				showOverlay(currentImageIndex);
+			}
+		}
+
+		// Initial load
+		loadImages('day1', document.querySelector('.menu a:first-child'));
+
     </script>
 </body>
 </html>
